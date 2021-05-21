@@ -5,7 +5,8 @@ from fastapi import FastAPI, HTTPException, Depends
 from fastapi_limiter import FastAPILimiter
 from fastapi_limiter.depends import RateLimiter
 from models import User, Verification
-from database import addVerification, emailTaken, authCodeTaken, verify
+from database import addVerification, emailTaken, authCodeTaken, verify, \
+    idTaken
 
 app = FastAPI()
 
@@ -35,9 +36,13 @@ async def post_verification(user: User):
           dependencies=[Depends(RateLimiter(times=5, seconds=5))])
 async def post_verify(user: Verification):
     # check if auth code exists
-    if not await authCodeTaken(user.dict()['auth_code']):
+    if await authCodeTaken(user.dict()['auth_code']):
         # raises error if it doesn't exist
         raise HTTPException(status_code=400, detail='Not a valid code.')
+    # check if user id is already taken
+    elif await idTaken(user.dict()['id']):
+        # raises forbidden error as user is already registered
+        raise HTTPException(status_code=403, detail='User ID is already taken.')
 
     # verifies user in the database
     await verify(user.dict()['id'], user.dict()['auth_code'])
