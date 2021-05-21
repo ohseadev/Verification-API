@@ -20,21 +20,40 @@ async def addVerification(user: dict):
         if not await authCodeTaken(auth_code):
             break
 
-    # set auth code and insert into database
+    # set auth code
     user['auth_code'] = auth_code
+    # set timestamp
     user['created'] = datetime.now()
+    # add to database
     verification.insert_one(user)
 
 
 async def emailTaken(email: str):
-    # search database for that email
-    search = verification.find_one({"email": email})
+    # search databases for that email
+    search1 = verification.find_one({"email": email})
+    search2 = registered.find_one({"email": email})
     # return bool if it was found or not
-    return search is not None
+    return search1 is not None or search2 is not None
 
 
 async def authCodeTaken(auth_code: int):
-    # search database for that email
+    # search database for that auth token
     search = verification.find_one({"auth_code": auth_code})
     # return bool if it was found or not
     return search is not None
+
+
+async def verify(id, auth_code):
+    # search database for that user from auth token
+    user = verification.find_one({"auth_code": auth_code})
+    # remove from verification database
+    verification.delete_one(user)
+    # remove auth code field
+    user.pop('auth_code')
+    # update timestamp
+    user['created'] = datetime.now()
+    # update _id to discord id
+    user['_id'] = id
+    # add to registered database
+    registered.insert_one(user)
+
