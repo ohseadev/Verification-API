@@ -17,7 +17,7 @@ async def addVerification(user: dict):
         auth_code = random.randint(100000, 999999)
 
         # break out if auth code isn't taken
-        if not await authCodeTaken(auth_code):
+        if await authCodeTaken(auth_code):
             break
 
     # set auth code
