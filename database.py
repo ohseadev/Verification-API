@@ -1,8 +1,8 @@
 import random
-
 import pymongo
 
 from settings import DBuser, DBpass, DBurl
+from datetime import datetime
 
 client = pymongo.MongoClient(f"mongodb+srv://{DBuser}:{DBpass}@{DBurl}")
 db = client['ohsea']
@@ -22,6 +22,7 @@ async def addVerification(user: dict):
 
     # set auth code and insert into database
     user['auth_code'] = auth_code
+    user['created'] = datetime.now()
     verification.insert_one(user)
 
 

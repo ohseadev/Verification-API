@@ -1,8 +1,7 @@
 from pydantic import BaseModel
 
 
-class Verification(BaseModel):
+class User(BaseModel):
     first_name: str
     last_name: str
     email: str
-    school: str
