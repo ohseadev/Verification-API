@@ -1,11 +1,24 @@
-from fastapi import FastAPI, HTTPException
+import aioredis
+import uvicorn
+
+from fastapi import FastAPI, HTTPException, Depends
+from fastapi_limiter import FastAPILimiter
+from fastapi_limiter.depends import RateLimiter
 from models import User, Verification
 from database import addVerification, emailTaken, authCodeTaken, verify
 
 app = FastAPI()
 
 
-@app.post('/verification')
+# Setup Rate Limiter
+@app.on_event('starter')
+async def startup():
+    redis = await aioredis.create_redis_pool("redis://localhost")
+    await FastAPILimiter.init(redis)
+
+
+@app.post('/verification',
+          dependencies=[Depends(RateLimiter(times=5, seconds=5))])
 async def post_verification(user: User):
     # checks if email is already taken
     if await emailTaken(user.dict()['email']):
@@ -18,7 +31,8 @@ async def post_verification(user: User):
     return {'message': 'success'}
 
 
-@app.post('/verify')
+@app.post('/verify',
+          dependencies=[Depends(RateLimiter(times=5, seconds=5))])
 async def post_verify(user: Verification):
     # check if auth code exists
     if not await authCodeTaken(user.dict()['auth_code']):
@@ -29,3 +43,7 @@ async def post_verify(user: Verification):
     await verify(user.dict()['id'], user.dict()['auth_code'])
     # return a success
     return {'message': 'success'}
+
+
+if __name__ == "__main__":
+    uvicorn.run("main:app", port=80, reload=True)
