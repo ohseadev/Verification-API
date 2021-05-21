@@ -45,7 +45,7 @@ async def authCodeTaken(auth_code: int):
 
 async def idTaken(id: int):
     # search database for that auth token
-    search = verification.find_one({"_id": id})
+    search = registered.find_one({"_id": id})
     # return bool if it was found or not
     return search is None
 
