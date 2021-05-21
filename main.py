@@ -11,7 +11,7 @@ app = FastAPI()
 
 
 # Setup Rate Limiter
-@app.on_event('starter')
+@app.on_event('startup')
 async def startup():
     redis = await aioredis.create_redis_pool("redis://localhost")
     await FastAPILimiter.init(redis)
