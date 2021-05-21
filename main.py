@@ -42,7 +42,7 @@ async def post_verify(user: Verification):
     # check if user id is already taken
     elif await idTaken(user.dict()['id']):
         # raises error if it doesn't exist
-        raise HTTPException(status_code=400, detail='Not a valid code.')
+        raise HTTPException(status_code=403, detail='ID is already used.')
 
     # verifies user in the database
     await verify(user.dict()['id'], user.dict()['auth_code'])
