@@ -17,7 +17,7 @@ async def addVerification(user: dict):
         auth_code = random.randint(100000, 999999)
 
         # break out if auth code isn't taken
-        if await authCodeTaken(auth_code):
+        if not await authCodeTaken(auth_code):
             break
 
     # set auth code
@@ -40,14 +40,14 @@ async def authCodeTaken(auth_code: int):
     # search database for that auth token
     search = verification.find_one({"auth_code": auth_code})
     # return bool if it was found or not
-    return search is None
+    return search is not None
 
 
 async def idTaken(id: int):
     # search database for that auth token
     search = registered.find_one({"_id": id})
     # return bool if it was found or not
-    return search is None
+    return search is not None
 
 
 async def verify(id, auth_code):

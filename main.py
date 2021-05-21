@@ -36,7 +36,7 @@ async def post_verification(user: User):
           dependencies=[Depends(RateLimiter(times=5, seconds=5))])
 async def post_verify(user: Verification):
     # check if auth code exists
-    if await authCodeTaken(user.dict()['auth_code']):
+    if not await authCodeTaken(user.dict()['auth_code']):
         # raises error if it doesn't exist
         raise HTTPException(status_code=400, detail='Not a valid code.')
     # check if user id is already taken
